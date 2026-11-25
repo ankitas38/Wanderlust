@@ -44,9 +44,9 @@ app.use(express.static(path.join(__dirname, "/public")));
 
 const store = MongoStore.create({
     mongoUrl: dbUrl,
-    crypto: {
-        secret: process.env.SECRET,
-    },
+    // crypto: {
+    //     secret: process.env.SECRET || "mysupersecretcodeformyprojectwanderlust89!@78uyrfdetyu#09",
+    // },
     touchAfter: 24 * 3600,
 });
 
@@ -56,6 +56,7 @@ store.on("error", (err) => {
 
 
 const sessionOptions = {
+    store,
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
@@ -108,6 +109,9 @@ app.all("*splat", (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+    if(res.headersSent) {
+        return next(err);
+    }
     let { statusCode = 500, message="Something went wrong" } = err;
     // res.status(statusCode).send(message);
     res.status(statusCode).render("error.ejs", {message});
